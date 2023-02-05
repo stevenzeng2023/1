@@ -5,14 +5,13 @@ import paramiko
 
 
 class Switch:
-    def __int__(self, host, username, password, brand, super_password, command):
+    def __init__(self, host, username, password, brand, super_password, command):
         self.host = host
         self.username = username
         self.password = password
         self.super_password = super_password
         self.brand = brand
         self.command = command
-
 
     # 登录交换机的方法
     def login(self):
@@ -49,10 +48,7 @@ class Switch:
         pass
 
 
-
 if __name__ == '__main__':
     path = os.getcwd()
     if not os.path.exists(path + 'info.csv'):
         f = open(path + 'info.csv', 'w', newline='')
-
-
