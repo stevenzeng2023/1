@@ -1,0 +1,3 @@
+username=greeadmin
+password=cisco2900
+super_password=libin110066

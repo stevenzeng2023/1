@@ -1,0 +1,50 @@
+display transceiver
+Port GigabitEthernet0/0/1 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/2 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/3 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/4 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/5 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/6 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/7 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/8 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/9 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/10 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/11 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/12 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/13 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/14 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/15 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/16 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/17 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/18 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/19 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/20 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/21 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/22 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/23 :Valid only on optical interface. 
+
+Port GigabitEthernet0/0/24 :Valid only on optical interface. 
+
+[Huawei]

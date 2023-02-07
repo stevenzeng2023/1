@@ -1,0 +1,53 @@
+dis cur
+[V200R003C00]
+#
+ sysname AR1
+#
+ snmp-agent local-engineid 800007DB03000000000000
+ snmp-agent 
+#
+ clock timezone China-Standard-Time minus 08:00:00
+#
+portal local-server load flash:/portalpage.zip
+#
+ drop illegal-mac alarm
+#
+ wlan ac-global carrier id other ac id 0
+#
+ set cpu-usage threshold 80 restore 75
+#
+aaa 
+ authentication-scheme default
+ authorization-scheme default
+ accounting-scheme default
+ domain default 
+ domain default_admin 
+ local-user admin password cipher %$%$RXG^Bwo#J.b~d214^E&EZN_u%$%$
+ local-user admin privilege level 1
+ local-user admin service-type telnet ssh
+ local-user greeadmin password cipher %$%$GJ,=T1,]5F|su\TSMnTNju8q%$%$
+ local-user greeadmin privilege level 3
+#
+firewall zone Local
+ priority 15
+#
+interface GigabitEthernet0/0/0
+ ip address 192.168.56.10 255.255.255.0 
+#
+interface GigabitEthernet0/0/1
+#
+interface GigabitEthernet0/0/2
+#
+interface NULL0
+#
+user-interface con 0
+ authentication-mode password
+user-interface vty 0 4
+ authentication-mode aaa
+ user privilege level 15
+user-interface vty 16 20
+#
+wlan ac
+#
+return
+[AR1]

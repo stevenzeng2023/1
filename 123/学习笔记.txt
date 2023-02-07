@@ -1,0 +1,5 @@
+https://pypi.tuna.tsinghua.edu.cn/simple    清华源
+
+gallery.pyecharts.org     制图模块 --画廊
+ab173.com 懒人工具网站
+tool.oschina.net 工具网站
