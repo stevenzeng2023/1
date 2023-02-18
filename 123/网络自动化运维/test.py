@@ -79,31 +79,33 @@
 # get_login_word = tn.read_until(b":", timeout=3)
 # get_login_word = get_login_word.decode()
 # print(get_login_word)
-import os
-import csv
+# import os
+# import csv
 
 
-def txt(name, text):
-    # os.getcwd() 获取当前的工作路径；
-    new = os.getcwd() + '\\cache\\'
-    # 判断当前路径是否存在，没有则创建new文件夹
-    if not os.path.exists(new):
-        os.makedirs(new)
+# def txt(name, text):
+#     # os.getcwd() 获取当前的工作路径；
+#     new = os.getcwd() + '\\cache\\'
+#     # 判断当前路径是否存在，没有则创建new文件夹
+#     if not os.path.exists(new):
+#         os.makedirs(new)
+#
+#     # 在当前py文件所在路径下的new文件中创建txt
+#     x = new + name + '.csv'
+#
+#     # 打开文件，open()函数用于打开一个文件，创建一个file对象，相关的方法才可以调用它进行读写。
+#     file = open(x, 'w')
+#
+#     # 写入内容信息
+#     csv_file = csv.writer(file)
+#     csv_file.writerow(text)
+#
+#     file.close()
+#     print('文件创建成功', x)
+#
+#
+# test = (['交换机IP', '交换机名称', '品牌', '端口号', '模块速率',
+#          '模块接口类型', '模块SN'])
+# txt('123', test)
 
-    # 在当前py文件所在路径下的new文件中创建txt
-    x = new + name + '.csv'
-
-    # 打开文件，open()函数用于打开一个文件，创建一个file对象，相关的方法才可以调用它进行读写。
-    file = open(x, 'w')
-
-    # 写入内容信息
-    csv_file = csv.writer(file)
-    csv_file.writerow(text)
-
-    file.close()
-    print('文件创建成功', x)
-
-
-test = (['交换机IP', '交换机名称', '品牌', '端口号', '模块速率',
-         '模块接口类型', '模块SN'])
-txt('123', test)
+from Switch import 
