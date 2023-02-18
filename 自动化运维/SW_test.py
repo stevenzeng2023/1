@@ -11,7 +11,7 @@ pool = ThreadPool(10)
 
 
 class Switch:
-    def __init__(self, host, username, password, super_password, cmd):
+    def __init__(self, host, username, password, super_password):
         self.error_txt = ''
         self.connected = False
         self.tn = None
@@ -21,7 +21,6 @@ class Switch:
         self.password = password
         self.super_password = super_password
         self.brand = None
-        self.cmd = cmd
         self.login = False
 
     def test(self):
@@ -38,20 +37,14 @@ class Switch:
         # 设置交换机telnet方式登录交换
         try:
             self.tn = Telnet(self.host, port=23, timeout=3)
-            time.sleep(1)
-            get_login_word = self.tn.read_until(b":", timeout=3)
-            get_login_word = get_login_word.decode()
-            print(get_login_word)
             self.connected = True
         except Exception as ee:
             # 否则表示Telnet失败
             self.connected = False
             self.error_txt = self.host + ',Telnet失败\n'
-            connect_fail = open('connect_fail.txt', 'w', encoding='UTF-8')
-            connect_fail.write('\n' + datetime.now().date().isoformat() + self.error_txt)
-            print(self.error_txt)
+            with open('connect_fail.txt', 'w', encoding='UTF-8') as connect_fail:
+                connect_fail.write('\n' + datetime.now().date().isoformat() + self.error_txt)
             print(f"{self.host}连接失败，错误原因：{ee}")
-            connect_fail.close()
         return self.tn
 
         # result = self.tn.read_very_eager().decode('ascii')
@@ -83,7 +76,17 @@ class Switch:
             elif index == 1:
                 try:
                     self.tn.write(self.password.encode('ascii') + b'\n')
-                    print(f'{self.host}以密码登录成功')
+                    get_login_word = self.tn.read_until(b">", timeout=3)
+                    get_login_word = get_login_word.decode()
+                    if '>' in get_login_word:
+                        print(f'{self.host}以密码登录成功')
+                        self.login = True
+                        return self.login
+                    else:
+                        print(f'{self.host}以密码登录失败')
+                        self.login = False
+                        return self.login
+
                     # output2 = self.tn.read_very_eager().decode()
 
                     # if '>' in output2:
@@ -95,6 +98,7 @@ class Switch:
 
                 except:
                     print(f'{self.host}密码登录失败')
+                    self.login = False
             else:
                 self.login = False
                 print(f'{self.host}登录失败')
@@ -119,12 +123,14 @@ class Switch:
                 else:
                     pass
                     print(f'{self.host}提权失败')
-                self.tn.read_until(b"]", timeout=1)
+                # self.tn.read_until(b"]", timeout=1)
+                return self.tn, self.login
 
         if not self.connected:
             print('跳过')
             pass
-        return self.tn
+            return self.tn, self.login
+        return self.tn, self.login
 
     def c_telnet_login(self):
         pass
@@ -146,16 +152,15 @@ class Switch:
         pass
 
     # 修改交换机全局配置的方法
-    def global_conf(self):
-        for cmds in self.cmd:
-            if self.tn.read_until(b"]", timeout=1).decode('ascii'):
+    def global_conf(self, cmds):
+        if self.login:
+            try:
                 self.tn.write(cmds.encode('ascii') + b'\n')
-                time.sleep(1)
-                self.tn.read_until(b"]", timeout=1).decode('ascii')
-                output = self.tn.read_all().decode('ascii')
-                print(output)
-                # print(self.cmd + '写入成功')
+                print(cmds + '写入成功')
                 time.sleep(0.5)
+            except Exception as g:
+                print(cmds + f'写入失败，失败原因：{g}')
+
         return self.tn
 
     # 修改交换机端口配置的方法
@@ -164,7 +169,7 @@ class Switch:
 
     def close(self):
         self.tn.close()
-        print('全部配置刷入完成')
+        # print('全部配置刷入完成')
         # def run(host_, username_, password_, super_, cmd_list_):
         #     for cmd_ in cmd_list_:
         #         sw = Switch(host=host_, username=username_, password=password_, super_password=super_, cmds=cmd_)
@@ -178,7 +183,7 @@ if __name__ == '__main__':
     # if not os.path.exists(path + 'info.csv'):
     #     f = open(path + 'info.csv', 'w', newline='')
 
-    cmd_list = list()
+    cmd_list = []
     host_list = list()
     login_info = list()
     try:
@@ -186,8 +191,8 @@ if __name__ == '__main__':
             cmd = cmd_data.readlines()
             for c in cmd:
                 c = c.strip()
-                # print(c)
                 cmd_list.append(c)
+                # print(cmd_list)
 
         with open('host_list.txt', 'r', encoding='UTF-8') as host_data:
             ip_list = host_data.readlines()
@@ -205,15 +210,21 @@ if __name__ == '__main__':
         print(f"读取出错：{e}")
 
     for host in host_list:
-        sw = Switch(host=host, username=username, password=password, super_password=super_password, cmd=cmd_list)
+        sw = Switch(host=host, username=username, password=password, super_password=super_password)
         try:
             sw.huawei_telnet()
-            sw.huawei_login()
-            sw.global_conf()
+            info = sw.huawei_login()
+            # time.sleep(2)
+            # get_w = sw.huawei_telnet().read_very_eager()
+            # get_w = get_w.decode()
+            # print(get_w)
+            if info:
+                for cmd in cmd_list:
+                    sw.global_conf(cmds=cmd)
             sw.close()
         except Exception as eee:
             print(f'程序出错:{eee}')
-        print(f'完成{host}')
+        print(f'{host}已处理')
 
     # for host in host_list:
     #     task = pool.apply_async(run, args=(host, username, password, super_password, cmd_list))
