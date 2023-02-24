@@ -175,6 +175,125 @@ class Switch:
 
         return self.tn, self.power, self.power, self.error_txt
 
+    def H3C_login(self):
+        if self.connected:
+            index, a, b = self.tn.expect([b'Login:', b'Password:'], timeout=1)
+            if index == 0:
+                try:
+                    self.tn.write(self.username.encode('ascii') + b'\n')
+                    self.tn.read_until(b'Password:', timeout=1)
+                    self.tn.write(self.password.encode('ascii') + b'\n')
+                    get_login_word = self.tn.read_until(b">", timeout=3)
+                    get_login_word = get_login_word.decode()
+                    if '>' in get_login_word:
+                        self.login = True
+                        print(f'{self.host},以账号密码登录成功')
+                    else:
+                        print(f'{self.host},以账号密码登录失败')
+                        mutex.acquire()
+                        with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                            connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},登录失败')
+                        mutex.release()
+                        time.sleep(1)
+                        self.login = False
+
+
+
+                except:
+                    self.login = False
+                    mutex.acquire()
+                    with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                        connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},登录失败')
+                    mutex.release()
+                    time.sleep(1)
+                    print(f'{self.host},以账号密码登录失败')
+
+            elif index == 1:
+                try:
+                    self.tn.write(self.password.encode('ascii') + b'\n')
+                    get_login_word = self.tn.read_until(b">", timeout=3)
+                    get_login_word = get_login_word.decode()
+
+                    if '>' in get_login_word:
+                        print(f'{self.host},以密码登录成功')
+                        self.login = True
+                        # return self.login
+                    else:
+                        print(f'{self.host},以密码登录失败')
+                        mutex.acquire()
+                        # self.error_txt.append(datetime.now().date().isoformat() + ' ' + f'{self.host},登录失败')
+                        with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                            connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},登录失败')
+                        mutex.release()
+                        time.sleep(1)
+                        self.login = False
+                        # return self.login, self.error_txt
+
+                except:
+                    print(f'{self.host},密码登录失败')
+                    mutex.acquire()
+                    with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                        connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},登录失败')
+                    mutex.release()
+                    time.sleep(1)
+                    self.login = False
+            else:
+                self.login = False
+                print(f'{self.host},登录失败')
+                mutex.acquire()
+                with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                    connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},登录失败')
+                mutex.release()
+                time.sleep(1)
+            if self.login:
+                self.tn.read_until(b'>', timeout=1)
+                self.tn.write(b"screen-length 0 temporary" + b"\n")
+                self.tn.read_until(b'>', timeout=1)
+                self.tn.write(b'sys' + b'\n')
+                index, f, g = self.tn.expect([b'>', b']'], timeout=1)
+                if index == 0:
+                    self.tn.write(b'su' + b'\n')
+                    self.tn.read_until(b'Password:', timeout=1)
+                    self.tn.write(self.super_password.encode() + b'\n')
+                    self.tn.read_until(b'>', timeout=1)
+                    self.tn.write(b"screen-length 0 temporary" + b"\n")
+                    self.tn.read_until(b'>', timeout=1)
+                    self.tn.write(b'sys' + b'\n')
+                    get_power_word = self.tn.read_until(b']', timeout=1)
+                    get_power_word = get_power_word.decode()
+                    if ']' in get_power_word:
+                        self.power = True
+                        print(f'{self.host},提权成功')
+                    else:
+                        self.power = False
+                        print(f'{self.host},提权失败')
+                        mutex.acquire()
+                        with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                            connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},提权失败')
+                        mutex.release()
+                        time.sleep(1)
+                elif index == 1:
+                    self.power = True
+                    print(f'{self.host},提权成功')
+                else:
+                    self.power = False
+                    print(f'{self.host},提权失败')
+                    mutex.acquire()
+                    with open('connect_fail.txt', 'a', encoding='UTF-8') as connect_fail:
+                        connect_fail.write('\n' + datetime.now().date().isoformat() + ' ' + f'{self.host},提权失败')
+                    mutex.release()
+                    time.sleep(1)
+
+                # return self.tn, self.login
+
+        if not self.connected:
+            print(self.host + '，无法进行操作')
+            pass
+            # return self.tn, self.login
+
+        return self.tn, self.power, self.power, self.error_txt
+
+
     def c_telnet_login(self):
         pass
 
@@ -222,20 +341,32 @@ class Switch:
         #         sw.close()
 
 
-def run(host, username, password, super_password, cmd_list):
+def run(host, username, password, super_password, cmd_list, brand):
     sw = Switch(host=host, username=username, password=password, super_password=super_password)
     try:
         time.sleep(0.5)
         sw.telnet()
         time.sleep(0.5)
-        power = sw.huawei_login()[2]
-        time.sleep(0.5)
-        if power:
-            for cmds in cmd_list:
-                sw.global_conf(cmds=cmds)
-                time.sleep(0.5)
-        sw.close()
-        print(f'{host}，已处理')
+        if 'huawei' in brand:
+            power = sw.huawei_login()[2]
+            time.sleep(0.5)
+            if power:
+                for cmds in cmd_list:
+                    sw.global_conf(cmds=cmds)
+                    time.sleep(0.5)
+            sw.close()
+            print(f'{host}，已处理')
+        elif 'H3C' in brand:
+            power = sw.H3C_login()[2]
+            time.sleep(0.5)
+            if power:
+                for cmds in cmd_list:
+                    sw.global_conf(cmds=cmds)
+                    time.sleep(0.5)
+            sw.close()
+            print(f'{host}，已处理')
+
+
     except Exception as eee:
         print(f'{host},处理失败,失败原因:{eee}')
 
@@ -268,6 +399,7 @@ if __name__ == '__main__':
             username = re.findall('username:(.*)', login_info)[0]
             password = re.findall('password:(.*)', login_info)[0]
             super_password = re.findall('super:(.*)', login_info)[0]
+            brand = re.findall('brand:(.*)', login_info)[0]
     except Exception as e:
         print(f"读取出错：{e}")
 
@@ -289,7 +421,7 @@ if __name__ == '__main__':
     #     print(f'{host}已处理')
 
     for host in host_list:
-        task = pool.apply_async(run, args=(host, username, password, super_password, cmd_list))
+        task = pool.apply_async(run, args=(host, username, password, super_password, cmd_list, brand))
 
     pool.close()
     pool.join()
