@@ -104,37 +104,22 @@
 #     hh = A(aa, bb, cc)
 #     hh.he()
 
-import telnetlib  # 导入Telnetlib模块
 
-host = "192.168.56.10"
-user = "greeadmin"  # 定义四个变量，分别是地址、用户名、密码、和退出字符串
-password = "cisco2900"
-enter = "su"
-exit_telnet = "quit"
+# 导入所需的库
+import pysnmp
+import xlwt
+import os
 
-tn = telnetlib.Telnet(host, 32771)  # 赋值tn，尝试以Telnet登录到192.168.142.128,32771。
-
-tn.write(b"rn")  # 输入换行符，等于输入enter键。进入用户模式
-tn.write(b"sun")  # 进入R3的特权模式
-tn.read_until(b"Password: ")  # 用read_until检测关键字：Password
-tn.write(password.encode('ascii') + b"n")  # 当符合关键字条件之后，输入用户名，并用n换行
-tn.write(b"telnet 192.168.56.20n")  # 利用python将Telnet到R4的命令发送给R3
-
-tn.read_until(b"Username: ")  # 登录到R4后，会提示Username，跟前面一样，读取关键字
-tn.write(user.encode('ascii') + b"n")
-tn.read_until(b"Password: ")  # 登录到R4后，读取关键字，并输入密码
-tn.write(password.encode('ascii') + b"n")
-# ----------------------------------------下面的配置都是网工烂熟于心的配置了，这里就不再介绍---------
-tn.write(b"sun")
-tn.write(b"123n")
-tn.write(b"conf tn")
-tn.write(b"int lo1n")
-tn.write(b"ip add 2.2.2.2 255.255.255.0n")
-tn.write(b"do sh ip int brn")
-tn.write(b"endn")
-tn.write(b"exitn")
-tn.read_until(b"[Connection to")  # 检测是否退出了R4的Telnet，这里只需检测是否为[Connection开头即可。
-tn.write(exit_telnet.encode('ascii') + b"n")  # 当检测到已经退出R4的Telnet，说明已经退回到R3的特权模式。这里再次输入exit退出。
-
-tn.close()
-print(tn.read_all().decode('ascii'))
+# 连接到华三交换机
+snmp_client = pysnmp.client.SnmpClient(host='192.168.56.10', port=161, community='public')
+# 创建xls文件
+workbook = xlwt.Workbook()
+sheet = workbook.add_sheet('Sheet1')
+# 查询每个端口下的光模块sn
+for port in range(1, 10):
+    oid = '1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.{}'.format(port)
+    sn = snmp_client.get(oid)
+    sheet.write(port, 0, port)
+    sheet.write(port, 1, sn)
+# 保存xls文件
+workbook.save(os.path.join(os.getcwd(), 'sn.xls'))
